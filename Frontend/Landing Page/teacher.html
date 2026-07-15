@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CU-Connect — Teacher Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Design tokens copied verbatim from the student app so the two portals share one look. */
+        :root{
+            --bg-page:#f0f2f5;
+            --glass-bg:rgba(255,255,255,0.65);
+            --glass-bg-strong:rgba(255,255,255,0.8);
+            --glass-border:rgba(255,255,255,0.7);
+            --glass-border-strong:rgba(255,255,255,0.9);
+            --glass-shadow:0 8px 32px rgba(0,0,0,0.08);
+            --glass-shadow-hover:0 12px 40px rgba(0,0,0,0.12);
+            --glass-blur:blur(20px);
+            --text-primary:#1a1a2e;
+            --text-secondary:#4a5568;
+            --text-muted:#94a3b8;
+            --accent:#F5A623;
+            --accent-light:rgba(245,166,35,0.12);
+            --accent-glow:rgba(245,166,35,0.3);
+            --accent-hover:#e6951a;
+            --navy:#1a1a2e;
+            --border:rgba(0,0,0,0.08);
+            --border-strong:rgba(0,0,0,0.12);
+            --success:#22c55e;
+            --warning:#f59e0b;
+            --danger:#ef4444;
+            --info:#3b82f6;
+            --font-main:'Open Sans',sans-serif;
+            --font-display:'Geist','Open Sans',sans-serif;
+            --sidebar-w:260px;
+            --header-h:64px;
+            --radius:18px;
+            --radius-sm:12px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{
+            font-family:var(--font-main);color:var(--text-primary);min-height:100vh;overflow-x:hidden;
+            background:#f0f2f5;
+            background:linear-gradient(160deg,#f5f6fa 0%,#eef0f5 30%,#f8f9fc 60%,#eef0f5 100%);
+            background-attachment:fixed;
+        }
+        body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+            background:
+                radial-gradient(ellipse 800px 800px at 10% 10%,rgba(245,166,35,0.1),transparent),
+                radial-gradient(ellipse 600px 600px at 90% 85%,rgba(255,255,255,0.6),transparent),
+                radial-gradient(ellipse 500px 500px at 50% 50%,rgba(245,166,35,0.05),transparent);}
+        ::-webkit-scrollbar{width:8px;height:8px}
+        ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:4px}
+
+        /* Sidebar */
+        .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:rgba(255,255,255,0.6);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-right:1px solid var(--glass-border);display:flex;flex-direction:column;z-index:100;transition:transform .3s ease;box-shadow:2px 0 20px rgba(0,0,0,0.05)}
+        .sidebar-header{padding:1.2rem 1.25rem;display:flex;align-items:center;gap:.7rem;border-bottom:1px solid rgba(0,0,0,0.06)}
+        .sidebar-logo{width:40px;height:40px;border-radius:12px;background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.25);display:grid;place-items:center;color:var(--accent);flex-shrink:0}
+        .sidebar-logo svg{width:28px;height:28px}
+        .sidebar-brand{display:flex;flex-direction:column;line-height:1.1}
+        .sidebar-brand-sub{font-size:.58rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase}
+        .sidebar-brand-name{font-family:var(--font-display);font-size:1.05rem;font-weight:800;color:var(--navy)}
+        .sidebar-brand-name span{color:var(--accent)}
+        .sidebar-role-tag{margin:0 1.25rem .2rem;padding:.3rem .6rem;border-radius:100px;background:var(--accent-light);color:var(--accent);font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;text-align:center}
+        .sidebar-nav{flex:1;padding:.8rem .75rem;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+        .sidebar-nav::-webkit-scrollbar{width:0}
+        .sidebar-item{display:flex;align-items:center;gap:.7rem;padding:.7rem .85rem;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:.84rem;font-weight:500;cursor:pointer;transition:all .2s;border:none;background:none;width:100%;text-align:left;font-family:var(--font-main)}
+        .sidebar-item:hover{background:rgba(0,0,0,0.05);color:var(--text-primary)}
+        .sidebar-item.active{background:var(--accent);color:#fff;font-weight:700;box-shadow:0 4px 15px var(--accent-glow)}
+        .sidebar-item svg{width:20px;height:20px;color:var(--text-muted);flex-shrink:0}
+        .sidebar-item.active svg{color:#fff}
+        .sidebar-bottom{padding:.75rem;border-top:1px solid rgba(0,0,0,0.06)}
+        .sidebar-logout{display:flex;align-items:center;gap:.7rem;padding:.7rem .85rem;border-radius:var(--radius-sm);background:none;color:var(--danger);font-weight:700;font-size:.84rem;cursor:pointer;border:1px solid var(--border);width:100%;font-family:var(--font-main);transition:all .2s}
+        .sidebar-logout:hover{background:rgba(239,68,68,0.08);border-color:var(--danger)}
+        .sidebar-logout svg{width:18px;height:18px}
+
+        /* Layout + header */
+        .main{margin-left:var(--sidebar-w);min-height:100vh;position:relative;z-index:1}
+        .header{position:sticky;top:0;height:var(--header-h);background:rgba(255,255,255,0.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;padding:0 1.5rem;gap:1rem;z-index:90;box-shadow:0 2px 15px rgba(0,0,0,0.04)}
+        .mobile-menu-btn{display:none;width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.5);cursor:pointer;place-items:center}
+        .mobile-menu-btn svg{width:20px;height:20px;color:var(--text-secondary)}
+        .header-title{font-family:var(--font-display);font-size:1.15rem;font-weight:800}
+        .header-right{display:flex;align-items:center;gap:.75rem;margin-left:auto}
+        .header-icon{width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.5);backdrop-filter:blur(8px);display:grid;place-items:center;cursor:pointer;transition:all .2s}
+        .header-icon:hover{border-color:var(--accent);background:rgba(255,255,255,0.8)}
+        .header-icon svg{width:18px;height:18px;color:var(--text-secondary)}
+        .header-user{display:flex;align-items:center;gap:.6rem;padding:.3rem .6rem .3rem .3rem;border-radius:100px;border:1px solid var(--border);background:rgba(255,255,255,0.5);backdrop-filter:blur(8px)}
+        .header-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font-size:.75rem;font-weight:700;color:#fff}
+        .header-user-info{display:flex;flex-direction:column;line-height:1.15}
+        .header-user-name{font-size:.78rem;font-weight:700;color:var(--text-primary)}
+        .header-user-role{font-size:.62rem;color:var(--text-secondary)}
+        .content{padding:1.5rem;max-width:1200px}
+        .page{display:none}.page.active{display:block;animation:pageIn .3s ease}
+        @keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Headings */
+        .page-head{margin-bottom:1.4rem}
+        .page-head h1{font-family:var(--font-display);font-size:1.5rem;font-weight:800}
+        .page-head h1 span{color:var(--accent)}
+        .page-head p{color:var(--text-secondary);font-size:.86rem;margin-top:.2rem}
+
+        /* Cards */
+        .card{background:rgba(255,255,255,0.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.8);border-radius:var(--radius);padding:1.2rem;box-shadow:0 4px 20px rgba(0,0,0,0.04)}
+        .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:1rem;flex-wrap:wrap}
+        .card-title{font-family:var(--font-display);font-size:1rem;font-weight:700}
+        .card + .card{margin-top:1.25rem}
+
+        /* Stat cards */
+        .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.25rem}
+        .stat-card{background:rgba(255,255,255,0.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.8);border-radius:var(--radius);padding:1.1rem;transition:all .25s;box-shadow:0 4px 20px rgba(0,0,0,0.04)}
+        .stat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(245,166,35,0.12);background:rgba(255,255,255,0.8)}
+        .stat-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;margin-bottom:.6rem;background:var(--accent-light);color:var(--accent)}
+        .stat-icon svg{width:20px;height:20px}
+        .stat-card-label{font-size:.72rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .stat-card-value{font-family:var(--font-display);font-size:1.9rem;font-weight:900;margin:.2rem 0 .1rem}
+        .stat-card-sub{font-size:.72rem;color:var(--text-muted)}
+
+        /* Buttons */
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.6rem 1.1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.6);color:var(--text-primary);font-size:.82rem;font-weight:700;font-family:var(--font-main);cursor:pointer;transition:all .2s}
+        .btn:hover{border-color:var(--accent);background:rgba(255,255,255,0.9)}
+        .btn svg{width:16px;height:16px}
+        .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 15px var(--accent-glow)}
+        .btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px)}
+        .btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+        .btn-success:hover{filter:brightness(1.05);transform:translateY(-1px)}
+        .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+        .btn-danger:hover{filter:brightness(1.05);transform:translateY(-1px)}
+        .btn-sm{padding:.4rem .75rem;font-size:.74rem}
+        .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+        /* Form controls */
+        .field{display:flex;flex-direction:column;gap:.35rem}
+        .field label{font-size:.72rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em}
+        .input,select.input,textarea.input{width:100%;padding:.6rem .8rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.7);font-size:.85rem;font-family:var(--font-main);color:var(--text-primary);outline:none;transition:all .2s}
+        .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+        textarea.input{resize:vertical;min-height:90px}
+        select.input option{background:#fff;color:var(--text-primary)}
+        .filter-row{display:flex;gap:.9rem;flex-wrap:wrap;align-items:flex-end}
+        .filter-row .field{min-width:180px;flex:1}
+
+        /* Tables */
+        .table-wrap{overflow-x:auto;border-radius:var(--radius-sm)}
+        table.tbl{width:100%;border-collapse:collapse;font-size:.84rem}
+        table.tbl th{text-align:left;padding:.7rem .8rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);border-bottom:1px solid var(--border);font-weight:700;white-space:nowrap}
+        table.tbl td{padding:.7rem .8rem;border-bottom:1px solid rgba(0,0,0,0.05);vertical-align:middle}
+        table.tbl tr:last-child td{border-bottom:none}
+        table.tbl tbody tr:hover,table.tbl tr.rowhover:hover{background:rgba(245,166,35,0.05)}
+        .stu-cell{display:flex;align-items:center;gap:.6rem}
+        .stu-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+        .stu-name{font-weight:700}
+        .stu-roll{font-size:.7rem;color:var(--text-muted)}
+        .clickable{cursor:pointer}
+
+        /* Badges */
+        .badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:100px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+        .b-green{background:rgba(34,197,94,.14);color:#16a34a}
+        .b-amber{background:rgba(245,166,35,.16);color:#d97706}
+        .b-red{background:rgba(239,68,68,.14);color:#dc2626}
+        .b-blue{background:rgba(59,130,246,.14);color:#2563eb}
+        .b-grey{background:rgba(148,163,184,.18);color:#64748b}
+
+        /* Segmented present/absent toggle */
+        .seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+        .seg button{border:none;background:rgba(255,255,255,0.5);padding:.35rem .8rem;font-size:.74rem;font-weight:700;cursor:pointer;color:var(--text-secondary);font-family:var(--font-main);transition:all .15s}
+        .seg button.on-present{background:var(--success);color:#fff}
+        .seg button.on-absent{background:var(--danger);color:#fff}
+
+        /* Mark input for grades */
+        .mark-input{width:80px;padding:.4rem .5rem;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.7);font-size:.85rem;font-family:var(--font-main);color:var(--text-primary);text-align:center;outline:none}
+        .mark-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+
+        /* Leave list */
+        .leave-row{display:flex;align-items:center;gap:1rem;padding:.9rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:.7rem;background:rgba(255,255,255,0.4);cursor:pointer;transition:all .2s}
+        .leave-row:hover{border-color:var(--accent);background:rgba(255,255,255,0.75)}
+        .leave-main{flex:1;min-width:0}
+        .leave-title{font-weight:700;font-size:.9rem}
+        .leave-meta{font-size:.74rem;color:var(--text-muted);margin-top:.15rem}
+
+        /* Announcement list */
+        .ann-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem;margin-bottom:.7rem;background:rgba(255,255,255,0.4)}
+        .ann-item h4{font-size:.92rem;font-weight:700;margin-bottom:.2rem}
+        .ann-item p{font-size:.82rem;color:var(--text-secondary);line-height:1.5}
+        .ann-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.6rem;gap:.6rem}
+        .ann-time{font-size:.7rem;color:var(--text-muted)}
+
+        /* Profile */
+        .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+        .info-row{display:flex;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid rgba(0,0,0,0.06);font-size:.86rem}
+        .info-row:last-child{border-bottom:none}
+        .info-row .k{color:var(--text-muted)}
+        .info-row .v{font-weight:600;text-align:right}
+        .profile-hero{display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem}
+        .profile-hero-avatar{width:66px;height:66px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:1.5rem;font-weight:800}
+        .profile-hero h2{font-family:var(--font-display);font-size:1.3rem;font-weight:800}
+        .profile-hero p{color:var(--text-secondary);font-size:.84rem}
+
+        /* Settings rows */
+        .settings-row{display:flex;align-items:center;justify-content:space-between;padding:.9rem 0;border-bottom:1px solid rgba(0,0,0,0.06)}
+        .settings-row:last-child{border-bottom:none}
+        .settings-row-info{display:flex;align-items:center;gap:.75rem}
+        .settings-row-icon{width:36px;height:36px;border-radius:10px;background:var(--accent-light);color:var(--accent);display:grid;place-items:center}
+        .settings-row-icon svg{width:18px;height:18px}
+        .settings-row-label{font-weight:600;font-size:.88rem}
+        .settings-row-sub{font-size:.72rem;color:var(--text-muted)}
+        .toggle-switch{width:46px;height:26px;border-radius:100px;background:rgba(0,0,0,0.15);position:relative;cursor:pointer;transition:background .2s;border:none;flex-shrink:0}
+        .toggle-switch.on{background:var(--accent)}
+        .toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
+        .toggle-switch.on::after{transform:translateX(20px)}
+
+        /* Empty state */
+        .empty{text-align:center;padding:2.5rem 1rem;color:var(--text-muted);font-size:.86rem}
+
+        /* Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:1rem}
+        .modal-overlay.show{display:flex}
+        .modal{background:rgba(255,255,255,0.96);border:1px solid var(--glass-border);border-radius:var(--radius);width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+        .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.3rem;border-bottom:1px solid var(--border)}
+        .modal-header h3{font-family:var(--font-display);font-size:1.1rem;font-weight:800}
+        .modal-close{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.5);cursor:pointer;display:grid;place-items:center;font-size:1.1rem;color:var(--text-secondary)}
+        .modal-body{padding:1.3rem}
+        .modal-footer{padding:1rem 1.3rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.6rem}
+        .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem}
+        .detail-item{background:rgba(0,0,0,0.03);border-radius:10px;padding:.6rem .8rem}
+        .detail-item .k{font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700}
+        .detail-item .v{font-size:.88rem;font-weight:600;margin-top:.15rem}
+        .audit-list{list-style:none;margin-top:.5rem}
+        .audit-list li{position:relative;padding:0 0 .9rem 1.2rem;border-left:2px solid var(--border);margin-left:.3rem}
+        .audit-list li:last-child{border-left-color:transparent;padding-bottom:0}
+        .audit-list li::before{content:'';position:absolute;left:-6px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+        .audit-status{font-weight:700;font-size:.82rem}
+        .audit-note{font-size:.76rem;color:var(--text-secondary)}
+        .audit-time{font-size:.68rem;color:var(--text-muted)}
+        .mini-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:800;margin:1.1rem 0 .5rem}
+
+        /* Toast */
+        .toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;display:flex;flex-direction:column;gap:.6rem}
+        .toast{padding:.8rem 1.1rem;border-radius:12px;background:rgba(26,26,46,0.95);color:#fff;font-size:.84rem;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,0.25);display:flex;align-items:center;gap:.6rem;animation:toastIn .25s ease;max-width:360px}
+        .toast.ok{background:rgba(22,163,74,0.96)}
+        .toast.err{background:rgba(220,38,38,0.96)}
+        @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+        .menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99}
+        .menu-overlay.show{display:block}
+
+        /* Dark mode — mirrors the student app's palette + panel treatment */
+        body.dark-mode{
+            --glass-border:rgba(255,255,255,0.10);
+            --text-primary:#ececed;--text-secondary:#b9b9bc;--text-muted:#8c8c90;--navy:#ececed;
+            --border:rgba(255,255,255,0.12);--border-strong:rgba(255,255,255,0.18);
+            background:#121212;background:linear-gradient(160deg,#1a1a1a 0%,#101010 30%,#1e1e1e 60%,#0d0d0d 100%);background-attachment:fixed;
+        }
+        body.dark-mode::before{background:
+            radial-gradient(ellipse 800px 800px at 10% 10%,rgba(245,166,35,0.10),transparent),
+            radial-gradient(ellipse 600px 600px at 90% 85%,rgba(255,255,255,0.04),transparent),
+            radial-gradient(ellipse 500px 500px at 50% 50%,rgba(245,166,35,0.04),transparent);}
+        body.dark-mode .sidebar,body.dark-mode .header,body.dark-mode .stat-card,body.dark-mode .card,body.dark-mode .modal{background:rgba(38,38,40,0.75);border-color:rgba(255,255,255,0.10);box-shadow:0 4px 24px rgba(0,0,0,0.35)}
+        body.dark-mode .modal{background:rgba(28,28,30,0.97)}
+        body.dark-mode .btn,body.dark-mode .header-icon,body.dark-mode .header-user,body.dark-mode .input,body.dark-mode .mark-input,body.dark-mode .seg button,body.dark-mode .modal-close,body.dark-mode .mobile-menu-btn,body.dark-mode .leave-row,body.dark-mode .ann-item{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);color:var(--text-primary)}
+        body.dark-mode .btn-primary{background:var(--accent);color:#fff}
+        body.dark-mode .btn-success,body.dark-mode .seg button.on-present{background:var(--success);color:#fff}
+        body.dark-mode .btn-danger,body.dark-mode .seg button.on-absent{background:var(--danger);color:#fff}
+        body.dark-mode .sidebar-item:hover{background:rgba(255,255,255,0.07)}
+        body.dark-mode select option{background:#1f1f22;color:#ececed}
+        body.dark-mode .detail-item{background:rgba(255,255,255,0.05)}
+        body.dark-mode .toggle-switch{background:rgba(255,255,255,0.18)}
+        body.dark-mode .toggle-switch.on{background:var(--accent)}
+
+        @media(max-width:900px){
+            .sidebar{transform:translateX(-100%)}
+            .sidebar.open{transform:translateX(0)}
+            .main{margin-left:0}
+            .mobile-menu-btn{display:grid}
+            .profile-grid{grid-template-columns:1fr}
+            .detail-grid{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo"><svg viewBox="0 0 48 48" fill="none"><path d="M24 4L6 14v20l18 10 18-10V14L24 4z" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".3"/><path d="M24 8l14 8v16l-14 8-14-8V16l14-8z" stroke="currentColor" stroke-width="1" fill="rgba(255,255,255,.05)"/><text x="24" y="27" text-anchor="middle" font-size="11" font-weight="900" fill="currentColor">CU</text></svg></div>
+            <div class="sidebar-brand"><span class="sidebar-brand-sub">Chitkara University</span><span class="sidebar-brand-name">CU-<span>Connect</span></span></div>
+        </div>
+        <div class="sidebar-role-tag">Teacher Portal</div>
+        <nav class="sidebar-nav">
+            <button class="sidebar-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</button>
+            <button class="sidebar-item" data-page="attendance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark Attendance</button>
+            <button class="sidebar-item" data-page="results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Publish Results</button>
+            <button class="sidebar-item" data-page="leave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Leave Requests</button>
+            <button class="sidebar-item" data-page="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Students</button>
+            <button class="sidebar-item" data-page="announcements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>Announcements</button>
+            <button class="sidebar-item" data-page="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>Profile</button>
+            <button class="sidebar-item" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+        </nav>
+        <div class="sidebar-bottom">
+            <button class="sidebar-logout" id="logoutBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</button>
+        </div>
+    </aside>
+
+    <div class="main">
+        <header class="header">
+            <button class="mobile-menu-btn" id="menuBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+            <div class="header-title" id="headerTitle">Dashboard</div>
+            <div class="header-right">
+                <button class="header-icon" id="themeToggle" title="Toggle theme"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+                <div class="header-user">
+                    <div class="header-avatar" id="headerAvatar">--</div>
+                    <div class="header-user-info"><span class="header-user-name" id="headerUserName">Teacher</span><span class="header-user-role" id="headerUserRole">Faculty</span></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- DASHBOARD -->
+            <section class="page active" id="page-dashboard">
+                <div class="page-head"><h1>Welcome, <span id="welcomeName">Teacher</span></h1><p id="dashSub">Here's how your class is doing.</p></div>
+                <div class="stat-grid" id="overviewStats"></div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Class Roster</span><button class="btn btn-sm" data-goto="students">View all →</button></div>
+                    <div class="table-wrap"><table class="tbl" id="dashRosterTable"><tbody></tbody></table></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Recent Leave Requests</span><button class="btn btn-sm" data-goto="leave">Manage →</button></div>
+                    <div id="dashLeaves"></div>
+                </div>
+            </section>
+
+            <!-- MARK ATTENDANCE -->
+            <section class="page" id="page-attendance">
+                <div class="page-head"><h1>Mark <span>Attendance</span></h1><p>Pick a subject and date, mark the roster, and save. Students see the update instantly on their portal.</p></div>
+                <div class="card">
+                    <div class="filter-row">
+                        <div class="field"><label>Semester</label><select class="input" id="attSem"></select></div>
+                        <div class="field"><label>Subject</label><select class="input" id="attSubject"></select></div>
+                        <div class="field"><label>Date</label><input type="date" class="input" id="attDate"></div>
+                        <button class="btn btn-primary" id="attLoadBtn">Load Roster</button>
+                    </div>
+                </div>
+                <div class="card" id="attRosterCard" style="display:none">
+                    <div class="card-header">
+                        <span class="card-title" id="attRosterTitle">Roster</span>
+                        <div style="display:flex;gap:.5rem">
+                            <button class="btn btn-sm" id="attAllPresent">All Present</button>
+                            <button class="btn btn-primary btn-sm" id="attSaveBtn">Save Attendance</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap"><table class="tbl" id="attTable"><thead><tr><th>Student</th><th>Current %</th><th>Mark</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </section>
+
+            <!-- PUBLISH RESULTS -->
+            <section class="page" id="page-results">
+                <div class="page-head"><h1>Publish <span>Results & GPA</span></h1><p>Enter marks per student for a subject. Grade points, SGPA and CGPA update automatically on each student's dashboard.</p></div>
+                <div class="card">
+                    <div class="filter-row">
+                        <div class="field"><label>Semester</label><select class="input" id="resSem"></select></div>
+                        <div class="field"><label>Subject</label><select class="input" id="resSubject"></select></div>
+                        <button class="btn btn-primary" id="resLoadBtn">Load Students</button>
+                    </div>
+                </div>
+                <div class="card" id="resRosterCard" style="display:none">
+                    <div class="card-header">
+                        <span class="card-title" id="resRosterTitle">Marks</span>
+                        <button class="btn btn-primary btn-sm" id="resSaveBtn">Publish Marks</button>
+                    </div>
+                    <div class="table-wrap"><table class="tbl" id="resTable"><thead><tr><th>Student</th><th>Marks (0–100)</th><th>Grade Point</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </section>
+
+            <!-- LEAVE REQUESTS -->
+            <section class="page" id="page-leave">
+                <div class="page-head"><h1>Leave <span>Requests</span></h1><p>Review student leave requests routed to you and record a decision. Every change is logged to an append-only audit trail.</p></div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Requests</span>
+                        <select class="input" id="leaveFilter" style="max-width:200px"><option value="all">All statuses</option><option value="Pending">Pending</option><option value="Under Review">Under Review</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option><option value="Withdrawn">Withdrawn</option></select>
+                    </div>
+                    <div id="leaveList"><div class="empty">Loading…</div></div>
+                </div>
+            </section>
+
+            <!-- STUDENTS -->
+            <section class="page" id="page-students">
+                <div class="page-head"><h1>My <span>Students</span></h1><p>Everything a student sees — attendance, results and leaves — in one place. Click a student for the full view.</p></div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Cohort</span><input class="input" id="studentSearch" placeholder="Search name or roll…" style="max-width:240px"></div>
+                    <div class="table-wrap"><table class="tbl" id="studentsTable"><thead><tr><th>Student</th><th>Semester</th><th>Attendance</th><th>CGPA</th><th>Performance</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </section>
+
+            <!-- ANNOUNCEMENTS -->
+            <section class="page" id="page-announcements">
+                <div class="page-head"><h1>Post an <span>Announcement</span></h1><p>Publish notices to your students. They appear in each student's notifications feed.</p></div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">New Announcement</span></div>
+                    <div style="display:flex;flex-direction:column;gap:.9rem">
+                        <div class="field"><label>Title</label><input class="input" id="annTitle" placeholder="e.g. MST-2 schedule for Operating Systems"></div>
+                        <div class="field"><label>Message</label><textarea class="input" id="annBody" placeholder="Write the details students should know…"></textarea></div>
+                        <div class="filter-row">
+                            <div class="field"><label>Type</label><select class="input" id="annType"><option value="general">General</option><option value="exam">Exam</option><option value="assignment">Assignment</option><option value="result">Result</option><option value="attendance">Attendance</option></select></div>
+                            <div class="field"><label>Target Semester</label><select class="input" id="annSem"></select></div>
+                            <button class="btn btn-primary" id="annPostBtn">Publish</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Posted Announcements</span></div>
+                    <div id="annList"><div class="empty">Loading…</div></div>
+                </div>
+            </section>
+
+            <!-- PROFILE -->
+            <section class="page" id="page-profile">
+                <div class="page-head"><h1>My <span>Profile</span></h1></div>
+                <div class="card">
+                    <div class="profile-hero">
+                        <div class="profile-hero-avatar" id="profInitials">--</div>
+                        <div><h2 id="profName">Teacher</h2><p id="profDept">Faculty</p></div>
+                    </div>
+                    <div class="profile-grid">
+                        <div>
+                            <div class="info-row"><span class="k">Faculty ID</span><span class="v" id="profRoll">—</span></div>
+                            <div class="info-row"><span class="k">Email</span><span class="v" id="profEmail">—</span></div>
+                            <div class="info-row"><span class="k">Phone</span><span class="v" id="profPhone">—</span></div>
+                        </div>
+                        <div>
+                            <div class="info-row"><span class="k">Department</span><span class="v" id="profProgram">—</span></div>
+                            <div class="info-row"><span class="k">Role</span><span class="v" id="profRole">Teacher</span></div>
+                            <div class="info-row"><span class="k">Handling Semester</span><span class="v" id="profSem">—</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section class="page" id="page-settings">
+                <div class="page-head"><h1><span>Settings</span></h1></div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Appearance</span></div>
+                    <div class="settings-row">
+                        <div class="settings-row-info"><div class="settings-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div><div><div class="settings-row-label">Dark Mode</div><div class="settings-row-sub">Switch between light and dark themes</div></div></div>
+                        <button class="toggle-switch" id="darkToggle"></button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Change Password</span></div>
+                    <div style="display:flex;flex-direction:column;gap:.9rem;max-width:420px">
+                        <div class="field"><label>Current Password</label><input type="password" class="input" id="pwCurrent"></div>
+                        <div class="field"><label>New Password</label><input type="password" class="input" id="pwNew"></div>
+                        <button class="btn btn-primary" id="pwBtn" style="align-self:flex-start">Update Password</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="settings-row" style="border:none;cursor:pointer" id="logoutRow">
+                        <div class="settings-row-info"><div class="settings-row-icon" style="background:rgba(239,68,68,0.12);color:var(--danger)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><div class="settings-row-label" style="color:var(--danger)">Logout</div></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Generic modal (leave detail + student detail) -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header"><h3 id="modalTitle">Details</h3><button class="modal-close" id="modalClose">×</button></div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer" id="modalFooter"></div>
+        </div>
+    </div>
+
+    <div class="toast-wrap" id="toastWrap"></div>
+
+    <script src="config.js"></script>
+    <script>
+    (function(){
+        const API = window.CUCONNECT.apiBase();
+        const token = localStorage.getItem('cu-token');
+        if (!token) { window.location.href = 'login.html'; return; }
+        const authHeaders = { 'Authorization': 'Bearer ' + token };
+        let currentUser = null;
+
+        // ---- helpers ----
+        const $ = (id) => document.getElementById(id);
+        const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        function logout(){ localStorage.removeItem('cu-token'); localStorage.removeItem('cu-user'); window.location.href = 'login.html'; }
+
+        function toast(msg, kind){
+            const t = document.createElement('div');
+            t.className = 'toast' + (kind ? ' ' + kind : '');
+            t.textContent = msg;
+            $('toastWrap').appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; t.style.transition = 'all .3s'; setTimeout(() => t.remove(), 300); }, 2800);
+        }
+
+        async function api(path, opts){
+            opts = opts || {};
+            const headers = Object.assign({}, authHeaders, opts.headers || {});
+            if (opts.body) headers['Content-Type'] = 'application/json';
+            const res = await fetch(API + path, { method: opts.method || 'GET', headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+            if (res.status === 401) { logout(); throw new Error('unauthorized'); }
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+            return data;
+        }
+
+        function initials(name){ const p = name.trim().split(/\s+/); return ((p[0]||'')[0] + (p[1] ? p[1][0] : '')).toUpperCase(); }
+        function attBadge(pct){ const c = pct >= 85 ? 'b-green' : pct >= 75 ? 'b-amber' : 'b-red'; return '<span class="badge ' + c + '">' + pct + '%</span>'; }
+        function perfBadge(band, excellent){ const c = excellent ? 'b-green' : band === 'Good' ? 'b-blue' : band === 'Average' ? 'b-amber' : 'b-red'; return '<span class="badge ' + c + '">' + esc(band) + (excellent ? ' ✦' : '') + '</span>'; }
+        function leaveBadge(status){ const map = { 'Approved':'b-green','Rejected':'b-red','Pending':'b-amber','Under Review':'b-blue','Withdrawn':'b-grey' }; return '<span class="badge ' + (map[status]||'b-grey') + '">' + esc(status) + '</span>'; }
+        function fmtDate(iso){ if(!iso) return '—'; const d = new Date(iso); if(isNaN(d)) return esc(iso); return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+        function fmtDateTime(iso){ const d = new Date(iso); if(isNaN(d)) return esc(iso); return d.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }
+
+        // ---- navigation ----
+        const titles = { dashboard:'Dashboard', attendance:'Mark Attendance', results:'Publish Results', leave:'Leave Requests', students:'Students', announcements:'Announcements', profile:'Profile', settings:'Settings' };
+        function goTo(page){
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+            document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+            $('headerTitle').textContent = titles[page] || '';
+            $('sidebar').classList.remove('open'); $('menuOverlay').classList.remove('show');
+            if (page === 'leave') loadLeaves();
+            if (page === 'students') loadStudents();
+            if (page === 'announcements') loadAnnouncements();
+        }
+        document.querySelectorAll('.sidebar-item').forEach(b => b.addEventListener('click', () => goTo(b.dataset.page)));
+        document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => goTo(b.dataset.goto)));
+        $('menuBtn').addEventListener('click', () => { $('sidebar').classList.toggle('open'); $('menuOverlay').classList.toggle('show'); });
+        $('menuOverlay').addEventListener('click', () => { $('sidebar').classList.remove('open'); $('menuOverlay').classList.remove('show'); });
+        $('logoutBtn').addEventListener('click', logout);
+        $('logoutRow').addEventListener('click', logout);
+
+        // ---- theme ----
+        function applyTheme(){ const dark = localStorage.getItem('cu-connect-theme') === 'dark'; document.body.classList.toggle('dark-mode', dark); $('darkToggle').classList.toggle('on', dark); }
+        function toggleTheme(){ const dark = !document.body.classList.contains('dark-mode'); localStorage.setItem('cu-connect-theme', dark ? 'dark' : 'light'); applyTheme(); }
+        $('themeToggle').addEventListener('click', toggleTheme);
+        $('darkToggle').addEventListener('click', toggleTheme);
+        applyTheme();
+
+        // ---- modal ----
+        function openModal(title, bodyHtml, footerHtml){
+            $('modalTitle').textContent = title;
+            $('modalBody').innerHTML = bodyHtml;
+            $('modalFooter').innerHTML = footerHtml || '';
+            $('modalOverlay').classList.add('show');
+        }
+        function closeModal(){ $('modalOverlay').classList.remove('show'); }
+        $('modalClose').addEventListener('click', closeModal);
+        $('modalOverlay').addEventListener('click', e => { if (e.target === $('modalOverlay')) closeModal(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        // ---- user / profile ----
+        function fillUser(u){
+            currentUser = u;
+            $('headerAvatar').textContent = u.initials;
+            $('headerUserName').textContent = u.name;
+            $('headerUserRole').textContent = u.role + ' · ' + u.program;
+            $('welcomeName').textContent = u.firstName;
+            $('profInitials').textContent = u.initials;
+            $('profName').textContent = u.name;
+            $('profDept').textContent = u.program + ' · ' + u.role;
+            $('profRoll').textContent = u.rollNumber;
+            $('profEmail').textContent = u.email;
+            $('profPhone').textContent = u.phone || '—';
+            $('profProgram').textContent = u.program;
+            $('profRole').textContent = u.role;
+            $('profSem').textContent = 'Semester ' + u.semester;
+        }
+
+        // ---- dashboard ----
+        async function loadOverview(){
+            const o = await api('/teacher/overview');
+            $('dashSub').textContent = o.program + ' · Semester ' + o.semester + ' · ' + o.studentCount + ' students';
+            const cards = [
+                { label:'Students', value:o.studentCount, sub:o.program, icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>' },
+                { label:'Avg Attendance', value:o.avgAttendance + '%', sub:'Semester ' + o.semester, icon:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' },
+                { label:'Avg CGPA', value:o.avgCgpa, sub:o.excellentCount + ' excellent (9.0+)', icon:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+                { label:'Pending Leaves', value:o.pendingLeaves, sub:'Awaiting decision', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>' },
+            ];
+            $('overviewStats').innerHTML = cards.map(c =>
+                '<div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + c.icon + '</svg></div>'
+                + '<div class="stat-card-label">' + c.label + '</div><div class="stat-card-value">' + c.value + '</div><div class="stat-card-sub">' + esc(c.sub) + '</div></div>'
+            ).join('');
+        }
+        async function loadDashRoster(){
+            const { students } = await api('/teacher/students');
+            const rows = students.slice(0, 6).map(s =>
+                '<tr class="clickable" data-sid="' + s.id + '"><td><div class="stu-cell"><div class="stu-avatar">' + esc(s.initials) + '</div><div><div class="stu-name">' + esc(s.name) + '</div><div class="stu-roll">' + esc(s.rollNumber) + '</div></div></div></td>'
+                + '<td>' + attBadge(s.attendance) + '</td><td><strong>' + s.cgpa + '</strong></td><td>' + perfBadge(s.performanceBand, s.isExcellent) + '</td></tr>'
+            ).join('');
+            $('dashRosterTable').querySelector('tbody').innerHTML =
+                '<tr><th>Student</th><th>Attendance</th><th>CGPA</th><th>Performance</th></tr>' + rows;
+            $('dashRosterTable').querySelectorAll('tr[data-sid]').forEach(tr => tr.addEventListener('click', () => openStudent(tr.dataset.sid)));
+        }
+        async function loadDashLeaves(){
+            const { leaves } = await api('/teacher/leaves');
+            const recent = leaves.slice(0, 4);
+            $('dashLeaves').innerHTML = recent.length ? recent.map(l =>
+                '<div class="leave-row" data-lid="' + l.id + '"><div class="leave-main"><div class="leave-title">' + esc(l.studentName) + ' · ' + esc(l.type) + '</div>'
+                + '<div class="leave-meta">' + fmtDate(l.fromDate) + ' → ' + fmtDate(l.toDate) + ' · ' + esc(l.reason) + '</div></div>' + leaveBadge(l.status) + '</div>'
+            ).join('') : '<div class="empty">No leave requests yet.</div>';
+            $('dashLeaves').querySelectorAll('[data-lid]').forEach(el => el.addEventListener('click', () => { goTo('leave'); setTimeout(() => openLeave(el.dataset.lid), 150); }));
+        }
+
+        // ---- subjects helper ----
+        async function loadSubjectsInto(selectEl, semester){
+            const { subjects } = await api('/teacher/subjects?semester=' + semester);
+            selectEl.innerHTML = subjects.map(s => '<option value="' + s.id + '" data-name="' + esc(s.name) + '" data-credits="' + s.credits + '">' + esc(s.name) + '</option>').join('');
+            return subjects;
+        }
+        function semesterOptions(sel, includeAll){
+            let html = '';
+            if (includeAll) html += '<option value="">All semesters</option>';
+            for (let i = 1; i <= 8; i++) html += '<option value="' + i + '">Semester ' + i + '</option>';
+            sel.innerHTML = html;
+        }
+
+        // ---- ATTENDANCE ----
+        let attRoster = [];
+        async function initAttendance(){
+            semesterOptions($('attSem'), false);
+            $('attSem').value = currentUser.semester;
+            $('attDate').value = new Date().toISOString().slice(0, 10);
+            await loadSubjectsInto($('attSubject'), $('attSem').value);
+        }
+        $('attSem') && $('attSem').addEventListener('change', () => loadSubjectsInto($('attSubject'), $('attSem').value));
+        $('attLoadBtn').addEventListener('click', async () => {
+            const subjectId = $('attSubject').value, date = $('attDate').value;
+            if (!subjectId || !date) return toast('Choose a subject and date.', 'err');
+            try {
+                const data = await api('/teacher/attendance?subjectId=' + subjectId + '&date=' + date);
+                attRoster = data.roster;
+                $('attRosterTitle').textContent = data.subject.name + ' · ' + fmtDate(date);
+                if (!attRoster.length) { $('attTable').querySelector('tbody').innerHTML = '<tr><td colspan="3"><div class="empty">No students in this semester.</div></td></tr>'; }
+                else renderAttRoster();
+                $('attRosterCard').style.display = 'block';
+            } catch (e) { toast(e.message, 'err'); }
+        });
+        function renderAttRoster(){
+            $('attTable').querySelector('tbody').innerHTML = attRoster.map((s, i) => {
+                const st = s.status || 'present'; // default present when not marked
+                return '<tr><td><div class="stu-cell"><div class="stu-avatar">' + esc(s.initials) + '</div><div><div class="stu-name">' + esc(s.name) + '</div><div class="stu-roll">' + esc(s.rollNumber) + '</div></div></div></td>'
+                    + '<td>' + attBadge(s.percentage) + ' <span class="stu-roll">' + s.attended + '/' + s.held + '</span></td>'
+                    + '<td><div class="seg" data-idx="' + i + '"><button data-v="present" class="' + (st === 'present' ? 'on-present' : '') + '">Present</button><button data-v="absent" class="' + (st === 'absent' ? 'on-absent' : '') + '">Absent</button></div></td></tr>';
+            }).join('');
+            attRoster.forEach((s, i) => { if (!s.status) s.status = 'present'; });
+            $('attTable').querySelectorAll('.seg').forEach(seg => {
+                seg.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+                    const idx = +seg.dataset.idx, v = btn.dataset.v;
+                    attRoster[idx].status = v;
+                    seg.querySelector('[data-v=present]').className = v === 'present' ? 'on-present' : '';
+                    seg.querySelector('[data-v=absent]').className = v === 'absent' ? 'on-absent' : '';
+                }));
+            });
+        }
+        $('attAllPresent').addEventListener('click', () => { attRoster.forEach(s => s.status = 'present'); renderAttRoster(); });
+        $('attSaveBtn').addEventListener('click', async () => {
+            if (!attRoster.length) return;
+            const btn = $('attSaveBtn'); btn.disabled = true;
+            try {
+                const marks = attRoster.map(s => ({ studentId: s.id, status: s.status || 'present' }));
+                const r = await api('/teacher/attendance', { method:'POST', body:{ subjectId:+$('attSubject').value, date:$('attDate').value, marks } });
+                toast(r.message, 'ok');
+                $('attLoadBtn').click();
+            } catch (e) { toast(e.message, 'err'); }
+            btn.disabled = false;
+        });
+
+        // ---- RESULTS ----
+        let resRoster = [], resCredits = 3;
+        function gpFromMarks(m){ m=+m; if(m>=90)return 10;if(m>=80)return 9;if(m>=70)return 8;if(m>=60)return 7;if(m>=50)return 6;if(m>=40)return 5;return 0; }
+        async function initResults(){
+            semesterOptions($('resSem'), false);
+            $('resSem').value = currentUser.semester;
+            await loadSubjectsInto($('resSubject'), $('resSem').value);
+        }
+        $('resSem') && $('resSem').addEventListener('change', () => loadSubjectsInto($('resSubject'), $('resSem').value));
+        $('resLoadBtn').addEventListener('click', async () => {
+            const opt = $('resSubject').selectedOptions[0];
+            if (!opt) return toast('Choose a subject.', 'err');
+            const subject = opt.dataset.name, semester = $('resSem').value;
+            try {
+                const data = await api('/teacher/grades?semester=' + semester + '&subject=' + encodeURIComponent(subject));
+                resRoster = data.roster; resCredits = data.credits;
+                $('resRosterTitle').textContent = subject + ' · Semester ' + semester + ' · ' + data.credits + ' credits';
+                renderResRoster();
+                $('resRosterCard').style.display = 'block';
+            } catch (e) { toast(e.message, 'err'); }
+        });
+        function renderResRoster(){
+            $('resTable').querySelector('tbody').innerHTML = resRoster.map((s, i) =>
+                '<tr><td><div class="stu-cell"><div class="stu-avatar">' + esc(s.initials) + '</div><div><div class="stu-name">' + esc(s.name) + '</div><div class="stu-roll">' + esc(s.rollNumber) + '</div></div></div></td>'
+                + '<td><input class="mark-input" type="number" min="0" max="100" data-idx="' + i + '" value="' + (s.marks == null ? '' : s.marks) + '"></td>'
+                + '<td class="gp-cell" data-gp="' + i + '">' + (s.marks == null ? '—' : gpFromMarks(s.marks).toFixed(1)) + '</td></tr>'
+            ).join('');
+            $('resTable').querySelectorAll('.mark-input').forEach(inp => inp.addEventListener('input', () => {
+                const idx = +inp.dataset.idx; const v = inp.value;
+                resRoster[idx].marks = v === '' ? null : +v;
+                $('resTable').querySelector('[data-gp="' + idx + '"]').textContent = v === '' ? '—' : gpFromMarks(v).toFixed(1);
+            }));
+        }
+        $('resSaveBtn').addEventListener('click', async () => {
+            const entries = resRoster.filter(s => s.marks != null && s.marks !== '').map(s => ({ studentId:s.id, marks:+s.marks }));
+            if (!entries.length) return toast('Enter marks for at least one student.', 'err');
+            const btn = $('resSaveBtn'); btn.disabled = true;
+            try {
+                const opt = $('resSubject').selectedOptions[0];
+                const r = await api('/teacher/grades', { method:'POST', body:{ semester:+$('resSem').value, subject:opt.dataset.name, credits:resCredits, marks:entries } });
+                toast(r.message, 'ok');
+            } catch (e) { toast(e.message, 'err'); }
+            btn.disabled = false;
+        });
+
+        // ---- LEAVES ----
+        let allLeaves = [];
+        async function loadLeaves(){
+            try {
+                const { leaves } = await api('/teacher/leaves');
+                allLeaves = leaves;
+                renderLeaves();
+            } catch (e) { $('leaveList').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+        }
+        function renderLeaves(){
+            const f = $('leaveFilter').value;
+            const list = allLeaves.filter(l => f === 'all' || l.status === f);
+            $('leaveList').innerHTML = list.length ? list.map(l =>
+                '<div class="leave-row" data-lid="' + l.id + '"><div class="leave-main"><div class="leave-title">' + esc(l.studentName) + ' · ' + esc(l.type) + '</div>'
+                + '<div class="leave-meta">' + esc(l.rollNumber) + ' · ' + fmtDate(l.fromDate) + ' → ' + fmtDate(l.toDate) + ' · ' + esc(l.reason) + '</div></div>' + leaveBadge(l.status) + '</div>'
+            ).join('') : '<div class="empty">No requests match this filter.</div>';
+            $('leaveList').querySelectorAll('[data-lid]').forEach(el => el.addEventListener('click', () => openLeave(el.dataset.lid)));
+        }
+        $('leaveFilter').addEventListener('change', renderLeaves);
+        function openLeave(id){
+            const l = allLeaves.find(x => String(x.id) === String(id));
+            if (!l) return;
+            const decided = ['Approved','Rejected','Withdrawn'].includes(l.status);
+            const body =
+                '<div class="detail-grid">'
+                + '<div class="detail-item"><div class="k">Student</div><div class="v">' + esc(l.studentName) + '</div></div>'
+                + '<div class="detail-item"><div class="k">Roll No.</div><div class="v">' + esc(l.rollNumber) + '</div></div>'
+                + '<div class="detail-item"><div class="k">Type</div><div class="v">' + esc(l.type) + '</div></div>'
+                + '<div class="detail-item"><div class="k">Approver</div><div class="v">' + esc(l.approver) + '</div></div>'
+                + '<div class="detail-item"><div class="k">From</div><div class="v">' + fmtDate(l.fromDate) + '</div></div>'
+                + '<div class="detail-item"><div class="k">To</div><div class="v">' + fmtDate(l.toDate) + '</div></div>'
+                + '</div>'
+                + '<div class="detail-item" style="margin-bottom:.6rem"><div class="k">Reason</div><div class="v">' + esc(l.reason) + '</div></div>'
+                + (l.details ? '<div class="detail-item"><div class="k">Details</div><div class="v" style="font-weight:400">' + esc(l.details) + '</div></div>' : '')
+                + '<div class="mini-title">Status: ' + leaveBadge(l.status) + '</div>'
+                + '<div class="field" style="margin-bottom:.6rem"><label>Decision note (optional)</label><textarea class="input" id="leaveNote" style="min-height:60px" placeholder="Add a note students will see in the audit trail…"></textarea></div>'
+                + '<div class="mini-title">Audit Trail</div>'
+                + '<ul class="audit-list">' + l.audit.map(a => '<li><div class="audit-status">' + esc(a.status) + '</div><div class="audit-note">' + esc(a.note) + '</div><div class="audit-time">' + fmtDateTime(a.at) + '</div></li>').join('') + '</ul>';
+            const footer = decided ? '<span class="stu-roll">This request is ' + esc(l.status.toLowerCase()) + ' and locked.</span>'
+                : '<button class="btn btn-sm" data-act="Under Review">Under Review</button>'
+                  + '<button class="btn btn-danger btn-sm" data-act="Rejected">Reject</button>'
+                  + '<button class="btn btn-success btn-sm" data-act="Approved">Approve</button>';
+            openModal('Leave · ' + l.type, body, footer);
+            $('modalFooter').querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => decideLeave(l.id, b.dataset.act)));
+        }
+        async function decideLeave(id, status){
+            const note = ($('leaveNote') && $('leaveNote').value.trim()) || '';
+            try {
+                await api('/teacher/leaves/' + id + '/status', { method:'POST', body:{ status, note } });
+                toast('Leave marked ' + status + '.', 'ok');
+                closeModal();
+                await loadLeaves();
+                loadDashLeaves();
+                loadOverview();
+            } catch (e) { toast(e.message, 'err'); }
+        }
+
+        // ---- STUDENTS ----
+        let allStudents = [];
+        async function loadStudents(){
+            try {
+                const { students } = await api('/teacher/students');
+                allStudents = students;
+                renderStudents();
+            } catch (e) { $('studentsTable').querySelector('tbody').innerHTML = '<tr><td colspan="5"><div class="empty">' + esc(e.message) + '</div></td></tr>'; }
+        }
+        function renderStudents(){
+            const q = $('studentSearch').value.toLowerCase();
+            const list = allStudents.filter(s => s.name.toLowerCase().includes(q) || s.rollNumber.toLowerCase().includes(q));
+            $('studentsTable').querySelector('tbody').innerHTML = list.length ? list.map(s =>
+                '<tr class="clickable" data-sid="' + s.id + '"><td><div class="stu-cell"><div class="stu-avatar">' + esc(s.initials) + '</div><div><div class="stu-name">' + esc(s.name) + '</div><div class="stu-roll">' + esc(s.rollNumber) + '</div></div></div></td>'
+                + '<td>Sem ' + s.semester + '</td><td>' + attBadge(s.attendance) + '</td><td><strong>' + s.cgpa + '</strong></td><td>' + perfBadge(s.performanceBand, s.isExcellent) + '</td></tr>'
+            ).join('') : '<tr><td colspan="5"><div class="empty">No students found.</div></td></tr>';
+            $('studentsTable').querySelectorAll('tr[data-sid]').forEach(tr => tr.addEventListener('click', () => openStudent(tr.dataset.sid)));
+        }
+        $('studentSearch').addEventListener('input', renderStudents);
+        async function openStudent(id){
+            try {
+                const d = await api('/teacher/students/' + id);
+                const s = d.student, a = d.attendance, r = d.results;
+                const attRows = a.subjects.map(su => '<tr><td>' + esc(su.name) + '</td><td>' + su.attended + '/' + su.held + '</td><td>' + attBadge(su.percentage) + '</td></tr>').join('');
+                const semRows = r.semesters.map(se => '<tr><td>Semester ' + se.semester + '</td><td>' + se.totalCredits + '</td><td><strong>' + se.sgpa + '</strong></td><td>' + perfBadge(se.band, se.sgpa >= 9) + '</td></tr>').join('');
+                const leaveRows = d.leaves.length ? d.leaves.map(l => '<tr><td>' + esc(l.type) + '</td><td>' + fmtDate(l.fromDate) + '</td><td>' + leaveBadge(l.status) + '</td></tr>').join('') : '<tr><td colspan="3"><div class="empty" style="padding:1rem">No leave requests.</div></td></tr>';
+                const body =
+                    '<div class="detail-grid">'
+                    + '<div class="detail-item"><div class="k">Roll No.</div><div class="v">' + esc(s.rollNumber) + '</div></div>'
+                    + '<div class="detail-item"><div class="k">Semester</div><div class="v">' + s.semester + '</div></div>'
+                    + '<div class="detail-item"><div class="k">Overall Attendance</div><div class="v">' + a.overall.percentage + '% (' + a.overall.attended + '/' + a.overall.held + ')</div></div>'
+                    + '<div class="detail-item"><div class="k">CGPA</div><div class="v">' + r.cgpa + ' · ' + esc(r.performanceBand) + (r.isExcellent ? ' ✦' : '') + '</div></div>'
+                    + '</div>'
+                    + '<div class="mini-title">Attendance (current semester)</div>'
+                    + '<div class="table-wrap"><table class="tbl"><thead><tr><th>Subject</th><th>Classes</th><th>%</th></tr></thead><tbody>' + (attRows || '<tr><td colspan="3"><div class="empty" style="padding:1rem">No attendance yet.</div></td></tr>') + '</tbody></table></div>'
+                    + '<div class="mini-title">Semester GPA history</div>'
+                    + '<div class="table-wrap"><table class="tbl"><thead><tr><th>Semester</th><th>Credits</th><th>SGPA</th><th>Band</th></tr></thead><tbody>' + (semRows || '<tr><td colspan="4"><div class="empty" style="padding:1rem">No results published.</div></td></tr>') + '</tbody></table></div>'
+                    + '<div class="mini-title">Leave requests</div>'
+                    + '<div class="table-wrap"><table class="tbl"><thead><tr><th>Type</th><th>From</th><th>Status</th></tr></thead><tbody>' + leaveRows + '</tbody></table></div>';
+                openModal(s.name, body,
+                    '<button class="btn btn-sm" id="jumpAtt">Mark Attendance</button><button class="btn btn-sm" id="jumpRes">Publish Marks</button>');
+                $('jumpAtt') && $('jumpAtt').addEventListener('click', () => { closeModal(); goTo('attendance'); });
+                $('jumpRes') && $('jumpRes').addEventListener('click', () => { closeModal(); goTo('results'); });
+            } catch (e) { toast(e.message, 'err'); }
+        }
+
+        // ---- ANNOUNCEMENTS ----
+        async function loadAnnouncements(){
+            try {
+                const { announcements } = await api('/teacher/announcements');
+                $('annList').innerHTML = announcements.length ? announcements.map(a =>
+                    '<div class="ann-item"><h4>' + esc(a.title) + ' <span class="badge b-blue">' + esc(a.type) + '</span></h4>'
+                    + (a.body ? '<p>' + esc(a.body) + '</p>' : '')
+                    + '<div class="ann-foot"><span class="ann-time">' + (a.semester ? 'Semester ' + a.semester : 'All semesters') + ' · ' + fmtDateTime(a.createdAt) + '</span>'
+                    + '<button class="btn btn-danger btn-sm" data-del="' + a.id + '">Delete</button></div></div>'
+                ).join('') : '<div class="empty">No announcements posted yet.</div>';
+                $('annList').querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
+                    try { await api('/teacher/announcements/' + b.dataset.del, { method:'DELETE' }); toast('Announcement deleted.', 'ok'); loadAnnouncements(); }
+                    catch (e) { toast(e.message, 'err'); }
+                }));
+            } catch (e) { $('annList').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+        }
+        $('annPostBtn').addEventListener('click', async () => {
+            const title = $('annTitle').value.trim(), body = $('annBody').value.trim(), type = $('annType').value, semester = $('annSem').value;
+            if (!title) return toast('Add a title.', 'err');
+            const btn = $('annPostBtn'); btn.disabled = true;
+            try {
+                await api('/teacher/announcements', { method:'POST', body:{ title, body, type, semester: semester === '' ? null : +semester } });
+                toast('Announcement published.', 'ok');
+                $('annTitle').value = ''; $('annBody').value = '';
+                loadAnnouncements();
+            } catch (e) { toast(e.message, 'err'); }
+            btn.disabled = false;
+        });
+
+        // ---- change password ----
+        $('pwBtn').addEventListener('click', async () => {
+            const currentPassword = $('pwCurrent').value, newPassword = $('pwNew').value;
+            if (!currentPassword || !newPassword) return toast('Fill in both password fields.', 'err');
+            const btn = $('pwBtn'); btn.disabled = true;
+            try {
+                const r = await api('/auth/password', { method:'PUT', body:{ currentPassword, newPassword } });
+                toast(r.message || 'Password updated.', 'ok');
+                $('pwCurrent').value = ''; $('pwNew').value = '';
+            } catch (e) { toast(e.message, 'err'); }
+            btn.disabled = false;
+        });
+
+        // ---- init ----
+        (async function init(){
+            try {
+                const cached = localStorage.getItem('cu-user');
+                if (cached) fillUser(JSON.parse(cached));
+                const me = await api('/auth/me');
+                if (me.user.role !== 'Teacher' && me.user.role !== 'Admin') {
+                    // Students belong on the student app.
+                    window.location.href = 'app.html';
+                    return;
+                }
+                fillUser(me.user);
+                localStorage.setItem('cu-user', JSON.stringify(me.user));
+                semesterOptions($('annSem'), true);
+                $('annSem').value = String(me.user.semester);
+                await Promise.all([ loadOverview(), loadDashRoster(), loadDashLeaves(), initAttendance(), initResults() ]);
+            } catch (e) {
+                if (e.message !== 'unauthorized') { console.error(e); toast('Failed to load: ' + e.message, 'err'); }
+            }
+        })();
+    })();
+    </script>
+</body>
+</html>

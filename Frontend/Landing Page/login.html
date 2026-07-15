@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CU-Connect — Login / Sign Up</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --text-color: #ffffff;
+            --muted-color: rgba(255,255,255,0.68);
+            --font-main: 'Open Sans', sans-serif;
+            --font-display: 'Geist', 'Open Sans', sans-serif;
+            --bg-outer: #110e06;
+            --bg-mid: #4a3d22;
+            --accent: #F5A623;
+            --accent-soft: rgba(245,166,35,0.16);
+            --accent-text: #0A192F;
+            --navy-primary: #0A192F;
+            --navy-secondary: #172A45;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { min-height: 100%; }
+        body {
+            font-family: var(--font-main);
+            color: var(--text-color);
+            background:
+                radial-gradient(circle at 15% 15%, rgba(245,166,35,0.18), transparent 24%),
+                radial-gradient(circle at 85% 15%, rgba(245,230,200,0.12), transparent 22%),
+                linear-gradient(135deg, var(--bg-outer), #0d0a04 42%, #171107 100%);
+            overflow-x: hidden;
+        }
+
+        body.light-mode {
+            --text-color: #0A192F;
+            --muted-color: rgba(10,25,47,0.64);
+            background:
+                radial-gradient(circle at 12% 10%, rgba(245,166,35,0.16), transparent 22%),
+                radial-gradient(circle at 88% 12%, rgba(10,25,47,0.08), transparent 24%),
+                linear-gradient(135deg, #f8fafc, #eef2f7 48%, #e7edf5 100%);
+        }
+
+        .page-shell {
+            min-height: 100vh;
+            width: min(100%, 1440px);
+            margin: 0 auto;
+            padding: 1rem 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        body.light-mode .topbar {
+            background: rgba(255,255,255,0.82);
+            border-color: rgba(10,25,47,0.09);
+            box-shadow: 0 14px 34px rgba(10,25,47,0.06);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo-crest {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--accent);
+        }
+
+        body.light-mode .logo-crest {
+            background: rgba(10,25,47,0.04);
+            border-color: rgba(10,25,47,0.1);
+        }
+
+        .logo-crest svg { width: 34px; height: 34px; }
+        .logo-text { display: flex; flex-direction: column; line-height: 1.05; }
+        .logo-university { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-color); }
+        .logo-project { font-family: var(--font-display); font-size: 1.18rem; font-weight: 800; }
+        .logo-project span { color: var(--accent); }
+
+        .topbar-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+        .theme-toggle {
+            width: 66px;
+            height: 36px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            transition: transform 0.28s ease;
+        }
+
+        body.light-mode .theme-toggle {
+            background: rgba(10,25,47,0.08);
+            border-color: rgba(10,25,47,0.12);
+        }
+
+        body.light-mode .theme-toggle::before { transform: translateX(30px); }
+
+        .theme-toggle-icons {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 0.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--text-color);
+            padding: 0.72rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.04);
+            font-size: 0.84rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            color: var(--accent);
+            border-color: rgba(245,166,35,0.34);
+        }
+
+        body.light-mode .back-link {
+            color: var(--navy-primary);
+            background: rgba(10,25,47,0.03);
+            border-color: rgba(10,25,47,0.1);
+        }
+
+        .auth-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 0 3rem;
+            min-height: calc(100vh - 220px);
+        }
+
+        .auth-panel {
+            width: min(100%, 760px);
+            padding: 1.25rem;
+            border-radius: 32px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+        }
+
+        body.light-mode .auth-panel {
+            background: rgba(255,255,255,0.82);
+            border-color: rgba(10,25,47,0.08);
+            box-shadow: 0 24px 54px rgba(10,25,47,0.08);
+        }
+
+        .auth-card {
+            width: 100%;
+            border-radius: 24px;
+            padding: 1.5rem;
+            background: rgba(7,7,7,0.34);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        body.light-mode .auth-card {
+            background: rgba(255,255,255,0.88);
+            border-color: rgba(10,25,47,0.08);
+        }
+
+        .auth-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.55rem;
+            padding: 0.35rem;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        body.light-mode .auth-tabs {
+            background: rgba(10,25,47,0.035);
+            border-color: rgba(10,25,47,0.08);
+        }
+
+        .auth-tab {
+            appearance: none;
+            border: none;
+            border-radius: 14px;
+            background: transparent;
+            color: var(--muted-color);
+            font-family: var(--font-main);
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 0.9rem 1rem;
+            cursor: pointer;
+            transition: all 0.24s ease;
+        }
+
+        .auth-tab.active {
+            color: var(--navy-primary);
+            background: var(--accent);
+            box-shadow: 0 12px 24px rgba(245,166,35,0.22);
+        }
+
+        .auth-pane { display: none; }
+        .auth-pane.active { display: block; }
+
+        .form-header {
+            margin: 1.2rem 0 1rem;
+            text-align: center;
+        }
+
+        .form-header h1,
+        .form-header h2 {
+            font-family: var(--font-display);
+            font-size: 1.7rem;
+            letter-spacing: -0.04em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.9rem;
+        }
+
+        .field,
+        .field.full {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .field.full { grid-column: 1 / -1; }
+
+        .field label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--muted-color);
+        }
+
+        .input-shell {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            min-height: 54px;
+            padding: 0.9rem 1rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+        }
+
+        body.light-mode .input-shell {
+            background: #ffffff;
+            border-color: rgba(10,25,47,0.1);
+            box-shadow: 0 8px 20px rgba(10,25,47,0.03);
+        }
+
+        .input-shell:focus-within {
+            border-color: rgba(245,166,35,0.42);
+            box-shadow: 0 0 0 4px rgba(245,166,35,0.12);
+        }
+
+        .input-shell svg { width: 18px; height: 18px; color: var(--muted-color); flex: 0 0 auto; }
+
+        .input-shell input,
+        .input-shell select {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--text-color);
+            font-size: 0.94rem;
+            font-family: var(--font-main);
+        }
+
+        body.light-mode .input-shell input,
+        body.light-mode .input-shell select { color: var(--navy-primary); }
+        .input-shell input::placeholder { color: rgba(255,255,255,0.34); }
+        body.light-mode .input-shell input::placeholder { color: rgba(10,25,47,0.38); }
+
+        /* Native dropdown list: keep options readable in dark mode
+           (default popups render dark text on white, but the select inherits
+           white text — pin explicit colours so the list is never invisible). */
+        .input-shell select option { background: #172A45; color: #ffffff; }
+        body.light-mode .input-shell select option { background: #ffffff; color: var(--navy-primary); }
+
+        .meta-row {
+            margin-top: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            color: var(--muted-color);
+            font-size: 0.82rem;
+        }
+
+        .checkbox input { accent-color: var(--accent); }
+
+        .text-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 1rem;
+            min-height: 56px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--accent), #ffd27a);
+            color: var(--navy-primary);
+            font-family: var(--font-main);
+            font-size: 0.96rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 18px 30px rgba(245,166,35,0.22);
+            transition: transform 0.24s ease, box-shadow 0.24s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 22px 34px rgba(245,166,35,0.28);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-error {
+            display: none;
+            margin-top: 0.85rem;
+            padding: 0.7rem 0.9rem;
+            border-radius: 12px;
+            background: rgba(239,68,68,0.14);
+            border: 1px solid rgba(239,68,68,0.32);
+            color: #fca5a5;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .auth-error.show { display: block; }
+        body.light-mode .auth-error { color: #b91c1c; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 1rem 0;
+            color: var(--muted-color);
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        body.light-mode .divider::before,
+        body.light-mode .divider::after { background: rgba(10,25,47,0.08); }
+
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+        }
+
+        .social-btn {
+            min-height: 50px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: var(--text-color);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.22s ease;
+        }
+
+        .social-btn-google {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .social-btn-google svg {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 auto;
+        }
+
+        .social-btn:hover {
+            border-color: rgba(245,166,35,0.32);
+            color: var(--accent);
+        }
+
+        body.light-mode .social-btn {
+            background: #ffffff;
+            border-color: rgba(10,25,47,0.08);
+            color: var(--navy-primary);
+        }
+
+        .form-footer {
+            margin-top: 1rem;
+            text-align: center;
+            color: var(--muted-color);
+            font-size: 0.83rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1024px) {
+            .auth-wrap {
+                min-height: auto;
+                padding: 2rem 0 2.5rem;
+            }
+
+            .auth-panel {
+                width: min(100%, 680px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-shell {
+                padding: 0.75rem 0.75rem 0;
+            }
+
+            .topbar {
+                padding: 0.8rem 0.85rem;
+                border-radius: 16px;
+                flex-wrap: nowrap;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .logo {
+                min-width: 0;
+                flex: 1 1 auto;
+                gap: 0.65rem;
+            }
+
+            .logo-crest {
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                flex: 0 0 38px;
+            }
+
+            .logo-crest svg {
+                width: 28px;
+                height: 28px;
+            }
+
+            .logo-text {
+                min-width: 0;
+            }
+
+            .logo-university {
+                font-size: 0.56rem;
+                letter-spacing: 0.09em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .logo-project {
+                font-size: 0.95rem;
+                white-space: nowrap;
+            }
+
+            .topbar-actions {
+                width: auto;
+                flex: 0 0 auto;
+                justify-content: flex-end;
+                gap: 0.45rem;
+            }
+
+            .theme-toggle {
+                width: 54px;
+                height: 32px;
+            }
+
+            .theme-toggle::before {
+                width: 24px;
+                height: 24px;
+            }
+
+            body.light-mode .theme-toggle::before {
+                transform: translateX(22px);
+            }
+
+            .theme-toggle-icons {
+                padding: 0 8px;
+                font-size: 0.72rem;
+            }
+
+            .back-link {
+                padding: 0.62rem 0.78rem;
+                font-size: 0.74rem;
+                white-space: nowrap;
+            }
+
+            .auth-wrap { padding: 1.25rem 0 2rem; }
+            .auth-panel { width: 100%; border-radius: 24px; padding: 0.9rem; }
+            .auth-card { padding: 1rem; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .topbar {
+                align-items: flex-start;
+            }
+
+            .logo {
+                align-items: flex-start;
+            }
+
+            .logo-university {
+                max-width: 120px;
+            }
+
+            .back-link {
+                font-size: 0.7rem;
+                padding: 0.6rem 0.72rem;
+            }
+        }
+    
+
+        /* REFERENCE-INSPIRED FOOTER */
+        .footer-reference-style {
+            background: #2f2f2f !important;
+            border-top: none !important;
+            padding: 2.8rem 1.5rem 2.4rem;
+            text-align: center;
+        }
+
+        .footer-reference-style::before {
+            display: none;
+        }
+
+        .footer-reference-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-reference-line {
+            width: min(24vw, 130px);
+            height: 1px;
+            background: rgba(255,255,255,0.22);
+        }
+
+        .footer-reference-brand {
+            text-decoration: none;
+        }
+
+        .footer-reference-brand-text {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            color: #ffffff;
+            letter-spacing: -0.04em;
+            font-weight: 900;
+        }
+
+        .footer-reference-brand-text span {
+            color: var(--gold-accent);
+        }
+
+        .footer-reference-socials {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .footer-reference-social {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.16);
+            color: rgba(255,255,255,0.82);
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .footer-reference-social svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+        }
+
+        .footer-reference-social:hover {
+            background: rgba(245,166,35,0.18);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .footer-reference-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.8rem 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 1.8rem;
+        }
+
+        .footer-reference-links a {
+            color: rgba(255,255,255,0.72);
+            text-decoration: none;
+            font-size: 0.84rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-reference-links a:hover {
+            color: var(--gold-accent);
+        }
+
+        .footer-reference-copy {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .footer-reference-copy p {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.82rem;
+            line-height: 1.75;
+            margin: 0 auto 0.55rem;
+        }
+
+        .footer-reference-copy p:last-child {
+            margin-bottom: 0;
+            max-width: 620px;
+        }
+
+        body.light-mode .footer-reference-style {
+            background: linear-gradient(180deg, #f6f8fb 0%, #eef3f8 100%) !important;
+            border-top: 1px solid rgba(10, 25, 47, 0.08) !important;
+        }
+
+        body.light-mode .footer-reference-line {
+            background: rgba(10, 25, 47, 0.14) !important;
+        }
+
+        body.light-mode .footer-reference-brand-text {
+            color: var(--navy-primary) !important;
+        }
+
+        body.light-mode .footer-reference-brand-text span {
+            color: var(--accent) !important;
+        }
+
+        body.light-mode .footer-reference-social {
+            background: rgba(10, 25, 47, 0.06) !important;
+            color: var(--navy-primary) !important;
+        }
+
+        body.light-mode .footer-reference-social:hover {
+            background: rgba(245, 166, 35, 0.18) !important;
+            color: var(--navy-primary) !important;
+        }
+
+        body.light-mode .footer-reference-links a {
+            color: rgba(10, 25, 47, 0.72) !important;
+        }
+
+        body.light-mode .footer-reference-links a:hover {
+            color: var(--accent) !important;
+        }
+
+        body.light-mode .footer-reference-copy p {
+            color: rgba(10, 25, 47, 0.52) !important;
+        }
+
+        @media (max-width: 768px) {
+            .footer-reference-style {
+                padding: 2.3rem 1rem 2rem;
+            }
+
+            .footer-reference-top {
+                gap: 0.75rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .footer-reference-line {
+                width: 22vw;
+            }
+
+            .footer-reference-socials {
+                gap: 0.8rem;
+                margin-bottom: 1.4rem;
+            }
+
+            .footer-reference-social {
+                width: 50px;
+                height: 50px;
+            }
+
+            .footer-reference-social svg {
+                width: 19px;
+                height: 19px;
+            }
+
+            .footer-reference-links {
+                gap: 0.55rem 0.95rem;
+                margin-bottom: 1.4rem;
+            }
+
+            .footer-reference-copy p {
+                font-size: 0.76rem;
+                line-height: 1.65;
+            }
+        }
+
+    
+
+        /* MAP SEARCH LIGHT MODE VISIBILITY FIX */
+        body.light-mode .map-search input {
+            background: #ffffff !important;
+            color: var(--navy-primary) !important;
+            border-color: rgba(10, 25, 47, 0.18) !important;
+            box-shadow: 0 6px 18px rgba(10, 25, 47, 0.06);
+        }
+
+        body.light-mode .map-search input::placeholder {
+            color: rgba(23, 42, 69, 0.55) !important;
+        }
+
+        body.light-mode .map-search input:focus {
+            border-color: var(--gold-accent) !important;
+            box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.14);
+        }
+
+        body.light-mode .map-search-btn {
+            background: var(--gold-accent) !important;
+            color: var(--navy-primary) !important;
+            box-shadow: 0 8px 18px rgba(245, 166, 35, 0.18);
+        }
+
+        body.light-mode .map-search-btn:hover {
+            background: #f2b645 !important;
+        }
+
+        body.light-mode #map-location-list {
+            color: var(--navy-primary);
+        }
+
+    
+
+        /* PORTAL LIGHT MODE BORDER VISIBILITY FIX */
+        body.light-mode .portal-mockup {
+            background: #ffffff !important;
+            border-color: rgba(10, 25, 47, 0.16) !important;
+            box-shadow: 0 18px 44px rgba(10, 25, 47, 0.08);
+        }
+
+        body.light-mode .portal-main {
+            background: transparent;
+        }
+
+        body.light-mode .portal-stat-card,
+        body.light-mode .gpa-card,
+        body.light-mode .bunk-calc,
+        body.light-mode .catalog-item,
+        body.light-mode .security-card,
+        body.light-mode .timeline-content {
+            background: rgba(23, 42, 69, 0.045) !important;
+            border: 1px solid rgba(10, 25, 47, 0.14) !important;
+            box-shadow: 0 8px 24px rgba(10, 25, 47, 0.04);
+        }
+
+        body.light-mode .catalog-chip {
+            background: rgba(23, 42, 69, 0.05) !important;
+            border: 1px solid rgba(10, 25, 47, 0.14) !important;
+            color: var(--navy-primary) !important;
+        }
+
+        body.light-mode .catalog-chip.active-chip {
+            background: var(--gold-accent) !important;
+            border-color: rgba(245, 166, 35, 0.42) !important;
+            color: var(--navy-primary) !important;
+            box-shadow: 0 8px 18px rgba(245, 166, 35, 0.16);
+        }
+
+        body.light-mode .catalog-item:hover,
+        body.light-mode .gpa-card:hover,
+        body.light-mode .portal-stat-card:hover,
+        body.light-mode .security-card:hover,
+        body.light-mode .timeline-content:hover {
+            border-color: rgba(245, 166, 35, 0.28) !important;
+            box-shadow: 0 12px 28px rgba(10, 25, 47, 0.07);
+        }
+
+        body.light-mode .att-bar-bg {
+            background: rgba(10, 25, 47, 0.1) !important;
+            border: 1px solid rgba(10, 25, 47, 0.08);
+        }
+
+        body.light-mode .grade-table th,
+        body.light-mode .grade-table td,
+        body.light-mode .att-table th,
+        body.light-mode .att-table td {
+            border-color: rgba(10, 25, 47, 0.12) !important;
+        }
+
+        body.light-mode .grade-badge {
+            border: 1px solid rgba(10, 25, 47, 0.1);
+        }
+
+        body.light-mode .grade-a {
+            background: rgba(74, 222, 128, 0.14) !important;
+            color: #166534 !important;
+        }
+
+        body.light-mode .grade-b {
+            background: rgba(251, 191, 36, 0.18) !important;
+            color: #92400e !important;
+        }
+
+        body.light-mode .grade-c {
+            background: rgba(248, 113, 113, 0.16) !important;
+            color: #991b1b !important;
+        }
+
+        body.light-mode .portal-sidebar-item {
+            border-color: transparent !important;
+        }
+
+        body.light-mode .portal-sidebar-item:hover,
+        body.light-mode .portal-sidebar-item.active {
+            box-shadow: 0 8px 18px rgba(245, 166, 35, 0.14);
+        }
+
+        body.light-mode .map-container,
+        body.light-mode #campus-map {
+            border: 1px solid rgba(10, 25, 47, 0.14);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(23, 42, 69, 0.03);
+        }
+
+    
+
+        /* INDEX AUTH BUTTONS */
+        .auth-link-btn {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-auth-btn {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.light-mode .auth-link-btn {
+            color: var(--navy-primary);
+        }
+
+    
+
+        /* MOBILE NAV OVERLAP FIX */
+        .nav-auth-item {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .header {
+                padding: 0.9rem 1rem;
+                align-items: center;
+            }
+
+            .header-actions {
+                margin-left: auto;
+                gap: 0.55rem;
+                position: relative;
+                z-index: 1003;
+                flex-shrink: 0;
+            }
+
+            .theme-toggle,
+            .hamburger {
+                position: relative;
+                z-index: 1004;
+            }
+
+            .auth-link-btn {
+                display: none !important;
+            }
+
+            .nav {
+                position: fixed;
+                top: 78px;
+                left: 1rem;
+                right: 1rem;
+                width: auto;
+                max-height: calc(100vh - 96px);
+                overflow-y: auto;
+                z-index: 1002;
+            }
+
+            .nav-auth-item {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                top: 74px;
+                left: 0.75rem;
+                right: 0.75rem;
+                max-height: calc(100vh - 88px);
+            }
+        }
+    
+
+        /* LOGIN PAGE FOOTER SPACING */
+        .footer-reference-style {
+            margin-top: 0;
+            width: 100vw;
+            max-width: 100vw;
+            margin-left: calc(50% - 50vw);
+            margin-right: calc(50% - 50vw);
+            border-radius: 0;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        .footer-reference-style .footer-reference-top,
+        .footer-reference-style .footer-reference-socials,
+        .footer-reference-style .footer-reference-links,
+        .footer-reference-style .footer-reference-copy {
+            width: 100%;
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 768px) {
+            .footer-reference-style {
+                width: 100%;
+                max-width: 100%;
+                margin-left: 0;
+                margin-right: 0;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+
+    
+
+        /* LOGIN LAPTOP LAYOUT POLISH */
+        .form-header {
+            margin: 1.35rem 0 1.15rem;
+        }
+
+        .form-header h1,
+        .form-header h2 {
+            font-size: 1.9rem;
+        }
+
+        .auth-pane form {
+            max-width: 100%;
+        }
+
+    
+
+        /* DESKTOP WIDTH EXPANSION */
+        @media (min-width: 1025px) {
+            .topbar {
+                width: 100%;
+            }
+
+            .auth-panel {
+                width: min(100%, 820px);
+            }
+        }
+
+    
+
+        /* MOBILE FOOTER CONTENT REDUCTION */
+        .footer-mobile-copy {
+            display: none;
+            color: rgba(255,255,255,0.58);
+            text-align: center;
+            font-size: 0.76rem;
+            line-height: 1.5;
+            margin-top: 1rem;
+        }
+
+        body.light-mode .footer-mobile-copy {
+            color: rgba(10, 25, 47, 0.55);
+        }
+
+        @media (max-width: 768px) {
+            .footer-reference-links,
+            .footer-reference-copy p:not(.footer-copy-main) {
+                display: none;
+            }
+
+            .footer-reference-copy {
+                display: none;
+            }
+
+            .footer-mobile-copy {
+                display: block;
+            }
+
+            .footer-reference-socials {
+                margin-bottom: 0;
+            }
+
+            .footer-reference-top {
+                margin-bottom: 1.2rem;
+            }
+
+            .footer-reference-style {
+                padding-top: 2rem;
+                padding-bottom: 1.6rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <a href="index.html#hero" class="logo">
+                <div class="logo-crest">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 4L6 14v20l18 10 18-10V14L24 4z" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/>
+                        <path d="M24 8l14 8v16l-14 8-14-8V16l14-8z" stroke="currentColor" stroke-width="1" fill="rgba(255,255,255,0.05)"/>
+                        <text x="24" y="27" text-anchor="middle" font-family="var(--font-display)" font-size="11" font-weight="900" fill="currentColor">CU</text>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-university">Chitkara University</span>
+                    <span class="logo-project">CU-<span>Connect</span></span>
+                </div>
+            </a>
+            <div class="topbar-actions">
+                <div class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
+                    <div class="theme-toggle-icons"><span>☀</span><span>☾</span></div>
+                </div>
+                <a href="index.html#hero" class="back-link">Back to Home</a>
+            </div>
+        </header>
+
+        <main class="auth-wrap">
+            <section class="auth-panel">
+                <div class="auth-card">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" data-tab="login">Login</button>
+                        <button class="auth-tab" data-tab="signup">Sign Up</button>
+                    </div>
+
+                    <div class="auth-pane active" id="login-pane">
+                        <div class="form-header">
+                            <h1>Login</h1>
+                        </div>
+                        <form>
+                            <div class="form-grid">
+                                <div class="field full">
+                                    <label>Email or Roll Number</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                        <input type="text" id="login-identifier" placeholder="student@chitkara.edu.in or 2210990001" />
+                                    </div>
+                                </div>
+                                <div class="field full">
+                                    <label>Password</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        <input type="password" id="login-password" placeholder="Enter your password" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <label class="checkbox"><input type="checkbox" checked /> Keep me signed in</label>
+                                <a href="#" class="text-link">Forgot password?</a>
+                            </div>
+                            <div class="auth-error" id="login-error"></div>
+                            <button type="submit" class="submit-btn" id="login-btn">Login to CU-Connect</button>
+                            <div class="divider">or</div>
+                            <div class="social-login">
+                                <a href="https://accounts.google.com/signin" target="_blank" rel="noopener noreferrer" class="social-btn social-btn-google">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.24 1.26-.96 2.32-2.04 3.03l3.3 2.56c1.92-1.77 3.03-4.38 3.03-7.48 0-.71-.06-1.39-.18-2.04H12z"/>
+                                        <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.61-2.44l-3.3-2.56c-.91.61-2.08.97-3.31.97-2.55 0-4.71-1.72-5.48-4.03l-3.41 2.63A9.99 9.99 0 0 0 12 22z"/>
+                                        <path fill="#4A90E2" d="M6.52 13.94A6.01 6.01 0 0 1 6.21 12c0-.67.11-1.31.31-1.94L3.11 7.43A9.99 9.99 0 0 0 2 12c0 1.61.38 3.13 1.11 4.57l3.41-2.63z"/>
+                                        <path fill="#FBBC05" d="M12 5.98c1.47 0 2.79.51 3.83 1.5l2.87-2.87C16.95 2.99 14.69 2 12 2a9.99 9.99 0 0 0-8.89 5.43l3.41 2.63C7.29 7.7 9.45 5.98 12 5.98z"/>
+                                    </svg>
+                                    <span>Continue with Google</span>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="auth-pane" id="signup-pane">
+                        <div class="form-header">
+                            <h2>Sign Up</h2>
+                        </div>
+                        <form>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label>First Name</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <input type="text" id="signup-firstName" placeholder="Aarav" />
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label>Last Name</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <input type="text" id="signup-lastName" placeholder="Sharma" />
+                                    </div>
+                                </div>
+                                <div class="field full">
+                                    <label>Institutional Email</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                        <input type="email" id="signup-email" placeholder="name@chitkara.edu.in" />
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label>Role</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                        <select id="signup-role">
+                                            <option>Student</option>
+                                            <option>Teacher</option>
+                                            <option>Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label>Program / Department</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                        <select id="signup-program">
+                                            <option>B.Tech CSE (AIML)</option>
+                                            <option>B.Tech CSE (AIFT)</option>
+                                            <option>BBA</option>
+                                            <option>Hotel Management</option>
+                                            <option>Design</option>
+                                            <option>Fine Arts</option>
+                                            <option>Architecture</option>
+                                            <option>Pharmacy</option>
+                                            <option>Nursing</option>
+                                            <option>Psychology</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label>Roll / Employee ID</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10"/><path d="M7 12h6"/></svg>
+                                        <input type="text" id="signup-roll" placeholder="2210990001" />
+                                    </div>
+                                </div>
+                                <div class="field full">
+                                    <label>Create Password</label>
+                                    <div class="input-shell">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        <input type="password" id="signup-password" placeholder="Create a strong password" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <label class="checkbox"><input type="checkbox" checked /> I agree to platform terms</label>
+                            </div>
+                            <div class="auth-error" id="signup-error"></div>
+                            <button type="submit" class="submit-btn" id="signup-btn">Create Account</button>
+                            <div class="form-footer">Already registered? <a href="#" class="text-link" id="switch-to-login">Switch to login</a></div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer footer-reference-style">
+        <div class="footer-reference-top">
+            <span class="footer-reference-line"></span>
+            <a href="index.html#hero" class="footer-reference-brand">
+                <span class="footer-reference-brand-text">CU-<span>Connect</span></span>
+            </a>
+            <span class="footer-reference-line"></span>
+        </div>
+
+        <div class="footer-reference-socials">
+            <a href="#" class="footer-reference-social" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+            <a href="#" class="footer-reference-social" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </a>
+            <a href="#" class="footer-reference-social" aria-label="Email">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </a>
+        </div>
+
+        <div class="footer-reference-links">
+            <a href="index.html#portal">Student Portal</a>
+            <a href="index.html#portal">Attendance</a>
+            <a href="index.html#portal">Results</a>
+            <a href="index.html#portal">Course Catalog</a>
+            <a href="index.html#portal">Campus Map</a>
+            <a href="index.html#contact">Contact Us</a>
+        </div>
+
+        <div class="footer-reference-copy">
+            <p class="footer-copy-main">&copy; 2025 Chitkara University. All Rights Reserved.</p>
+            <p>CU-Connect is built to unify attendance, results, catalog access, and campus navigation into one modern student platform.</p>
+        </div>
+        <p class="footer-mobile-copy">&copy; 2025 Chitkara University. All Rights Reserved.</p>
+    </footer>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        const body = document.body;
+        const themeToggle = document.getElementById('theme-toggle');
+        const savedTheme = localStorage.getItem('cu-connect-theme');
+        if (savedTheme === 'light') body.classList.add('light-mode');
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('cu-connect-theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+        });
+
+        const tabs = document.querySelectorAll('.auth-tab');
+        const panes = {
+            login: document.getElementById('login-pane'),
+            signup: document.getElementById('signup-pane')
+        };
+
+        function activateTab(tab) {
+            tabs.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+            Object.entries(panes).forEach(([key, pane]) => pane.classList.toggle('active', key === tab));
+        }
+
+        tabs.forEach(btn => btn.addEventListener('click', () => activateTab(btn.dataset.tab)));
+
+        // Open the Sign-Up tab directly when arrived via login.html#signup (e.g. "Get Started").
+        if (window.location.hash === '#signup') activateTab('signup');
+
+        document.getElementById('switch-to-login').addEventListener('click', function(e) {
+            e.preventDefault();
+            activateTab('login');
+        });
+
+        // ---- Auth wiring (talks to the CU-Connect backend) ----
+        const API = window.CUCONNECT.apiBase();
+
+        // Route to the right portal based on the signed-in user's role.
+        function homeFor(user) {
+            const role = user && user.role;
+            return (role === 'Teacher' || role === 'Admin') ? 'teacher.html' : 'app.html';
+        }
+
+        // If already logged in, skip straight to the correct portal.
+        if (localStorage.getItem('cu-token')) {
+            let cachedUser = null;
+            try { cachedUser = JSON.parse(localStorage.getItem('cu-user') || 'null'); } catch (_) {}
+            window.location.href = homeFor(cachedUser);
+        }
+
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.classList.add('show');
+        }
+        function clearError(id) {
+            const el = document.getElementById(id);
+            el.textContent = '';
+            el.classList.remove('show');
+        }
+
+        async function postJSON(path, payload) {
+            const res = await fetch(API + path, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+            return data;
+        }
+
+        function persistSession(data) {
+            localStorage.setItem('cu-token', data.token);
+            localStorage.setItem('cu-user', JSON.stringify(data.user));
+            window.location.href = homeFor(data.user);
+        }
+
+        // Login
+        document.getElementById('login-pane').querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearError('login-error');
+            const btn = document.getElementById('login-btn');
+            const identifier = document.getElementById('login-identifier').value.trim();
+            const password = document.getElementById('login-password').value;
+            if (!identifier || !password) return showError('login-error', 'Please enter your email/roll number and password.');
+            btn.disabled = true; btn.textContent = 'Signing in…';
+            try {
+                persistSession(await postJSON('/auth/login', { identifier, password }));
+            } catch (err) {
+                showError('login-error', err.message);
+                btn.disabled = false; btn.textContent = 'Login to CU-Connect';
+            }
+        });
+
+        // Signup
+        document.getElementById('signup-pane').querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearError('signup-error');
+            const btn = document.getElementById('signup-btn');
+            const payload = {
+                firstName: document.getElementById('signup-firstName').value.trim(),
+                lastName: document.getElementById('signup-lastName').value.trim(),
+                email: document.getElementById('signup-email').value.trim(),
+                rollNumber: document.getElementById('signup-roll').value.trim(),
+                role: document.getElementById('signup-role').value,
+                program: document.getElementById('signup-program').value,
+                password: document.getElementById('signup-password').value
+            };
+            if (!payload.firstName || !payload.email || !payload.rollNumber || !payload.password) {
+                return showError('signup-error', 'Please fill in first name, email, roll number and password.');
+            }
+            btn.disabled = true; btn.textContent = 'Creating account…';
+            try {
+                persistSession(await postJSON('/auth/signup', payload));
+            } catch (err) {
+                showError('signup-error', err.message);
+                btn.disabled = false; btn.textContent = 'Create Account';
+            }
+        });
+    </script>
+</body>
+</html>

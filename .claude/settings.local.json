@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm start *)",
+      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>c&&\\(d+=c\\)\\).on\\(\"end\",\\(\\)=>{const a=JSON.parse\\(d\\);console.log\\(\"overall:\",a.overall.percentage+\"%\",\"safeBunks:\",a.overall.safeBunks,\"toRecover:\",a.overall.classesToRecover\\)}\\)')",
+      "Bash(node -e ' *)",
+      "Bash(curl -s http://localhost:4000/app.html -o /tmp/d.html -w \"HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:4000/app.html -o 'C:\\\\Users\\\\saksh/d.html' -w 'HTTP %{http_code}\\\\n')",
+      "Bash(curl -s http://localhost:4000/app.html -o 'C:\\\\Users\\\\saksh/dd.html' -w 'served HTTP %{http_code}\\\\n')",
+      "Read(//c/Users/saksh/**)",
+      "Bash(curl -s http://localhost:4000/app.html -o 'C:\\\\Users\\\\saksh/x.html' -w 'served HTTP %{http_code}\\\\n')",
+      "Bash(curl -s http://localhost:4000/app.html)",
+      "Bash(grep -o 'Leave Status.\\\\{0,140\\\\}')",
+      "Bash(grep -n 'Pending Request\\\\|>1<\\\\|Pending</\\\\|1 Pending' app.html)",
+      "Bash(curl -s -I http://localhost:4000/app.html)",
+      "Bash(curl -s -o /dev/null -w \"docx HTTP %{http_code}, %{size_download} bytes, type=%{content_type}\\\\n\" \"http://localhost:4000/CU-Connect_PDR-1.docx\")",
+      "Bash(curl -s \"http://localhost:4000/index.html\")",
+      "Bash(curl -s \"http://localhost:4000/login.html\")",
+      "Bash(rm -f cu-connect.db cu-connect.db-shm cu-connect.db-wal)",
+      "Bash(node db/seed.js)",
+      "Bash(node -e \"const db=require\\('./db/database'\\); console.log\\('users:', db.prepare\\('SELECT firstName,role,rollNumber FROM users'\\).all\\(\\)\\); console.log\\('announcements:', db.prepare\\('SELECT COUNT\\(*\\) c FROM announcements'\\).get\\(\\)\\);\")",
+      "PowerShell(Get-Process *)",
+      "Bash(node -e \"const db=require\\('./db/database'\\); console.log\\('users:', db.prepare\\('SELECT firstName,role,rollNumber FROM users'\\).all\\(\\)\\); console.log\\('announcements count:', db.prepare\\('SELECT COUNT\\(*\\) c FROM announcements'\\).get\\(\\).c\\);\")",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(s\\);console.log\\('semesters:',r.semesters.map\\(x=>x.semester\\),'cgpa:',r.cgpa\\)}\\)\")",
+      "Bash(curl -s -o /dev/null -w \"teacher.html: %{http_code}\\\\n\" http://localhost:4000/teacher.html)",
+      "Bash(node --check /tmp/teacher_script.js)",
+      "Bash(node --check _tscript.js)",
+      "Bash(rm -f _tscript.js)",
+      "Bash(node --check _ascript.js)",
+      "Bash(rm -f _ascript.js)",
+      "Bash(curl *)",
+      "Bash(npm install *)"
+    ]
+  }
+}

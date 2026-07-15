@@ -1,0 +1,30 @@
+# Render blueprint for the CU-Connect backend (persistent Node server — keeps
+# Socket.IO and the API alive, which serverless/Vercel cannot).
+# Deploy: push this repo, then "New + > Blueprint" in the Render dashboard and
+# point it at this file. Set the marked secrets in the dashboard.
+services:
+  - type: web
+    name: cu-connect-backend
+    runtime: node
+    plan: free
+    rootDir: CU - Connect/Backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true # Render generates a strong random secret
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      # Set in the dashboard — your MongoDB Atlas connection string.
+      - key: MONGODB_URI
+        sync: false
+      # Set in the dashboard — comma-separated Vercel frontend origin(s).
+      - key: CORS_ORIGINS
+        sync: false
+      # IDE stays OFF in production until a sandbox (Judge0/Docker) is wired up.
+      - key: IDE_ENABLED
+        value: "false"
